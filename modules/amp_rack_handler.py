@@ -1,26 +1,22 @@
-from typing import Optional, Dict
-from models.project import AmpProject, AmpRack
+from models.project import AmpRack, AmpProject
+from typing import Optional
+
+def create_amp_rack(rack_id: str, rack_type: str = "112 Amp Rack", serial_number: Optional[str] = None, position: int = 1, channels: list = None, notes: Optional[str] = None) -> AmpRack:
+    if channels is None:
+        channels = []
+    return AmpRack(
+        rack_id=rack_id,
+        rack_type=rack_type,
+        serial_number=serial_number,
+        position=position,
+        channels=channels,
+        notes=notes
+    )
 
 class AmpRackHandler:
-    """Modular handler for creating and managing amp racks and projects."""
     def __init__(self):
-        self.current_project: Optional[AmpProject] = None
+        self.project = AmpProject(project_name="New Project")
 
-    def create_new_project(self, name: str, customer: str = "Adamson", venue: str = None) -> AmpProject:
-        self.current_project = AmpProject(
-            project_name=name,
-            customer=customer,
-            venue=venue
-        )
-        return self.current_project
-
-    def add_rack(self, rack_data: Dict) -> AmpRack:
-        rack = AmpRack(**rack_data)
-        if self.current_project:
-            self.current_project.add_rack(rack)
-        return rack
-
-    def get_patch_summary(self) -> str:
-        if self.current_project:
-            return self.current_project.generate_patch_summary()
-        return "No project loaded."
+    def add_rack(self, rack):
+        self.project.add_rack(rack)
+        return self.project
