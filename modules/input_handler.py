@@ -1,25 +1,52 @@
-from models.project import AmpProject
+# modules/input_handler.py
 import json
-from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from tkinter import filedialog, messagebox
+from models.project import AmpProject
 
-def save_project(project: AmpProject, filename: Optional[str] = None) -> str:
-    """Save project to JSON for persistence."""
-    if filename is None:
-        safe_name = ''.join(c if c.isalnum() else '_' for c in project.project_name)
-        filename = f"{safe_name}_{datetime.now().strftime('%Y%m%d')}.json"
-    
-    filepath = Path('projects') / filename
-    filepath.parent.mkdir(exist_ok=True)
-    
-    with open(filepath, 'w') as f:
-        f.write(project.model_dump_json(indent=2))
-    
-    return str(filepath)
+def save_project(project: AmpProject):
+    """Save project to user-chosen location and filename"""
+    if not project.project_name:
+        messagebox.showwarning("Save", "Please enter a project name first!")
+        return
 
-def load_project(filename: str) -> AmpProject:
-    """Load project from JSON."""
-    with open(filename, 'r') as f:
-        data = json.load(f)
-    return AmpProject.model_validate(data)
+    default_name = f"{project.project_name.replace(' ', '_')}.json"
+    
+    file_path = filedialog.asksaveasfilename(
+        initialdir=Path.home() / "Documents",
+        initialfile=default_name,
+        defaultextension=".json",
+        filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+    )
+    
+    if not file_path:
+        return  # User cancelled
+
+    try:
+        data = project.model_dump(mode='json')
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        messagebox.showinfo("Saved", f"Project saved to:\n{file_path}")
+        return file_path
+    except Exception as e:
+        messagebox.showerror("Save Error", str(e))
+
+def load_project() -> AmpProject | None:
+    """Load project from user-chosen JSON file"""
+    file_path = filedialog.askopenfilename(
+        initialdir=Path.home() / "Documents",
+        filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+    )
+    
+    if not file_path:
+        return None
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        project = AmpProject.model_validate(data)
+        messagebox.showinfo("Loaded", f"Loaded project: {project.project_name}")
+        return project
+    except Exception as e:
+        messagebox.showerror("Load Error", str(e))
+        return None
