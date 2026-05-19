@@ -1,0 +1,47 @@
+Start of Every Project. 
+
+Folder Name/
+├── venv/                   # ← ignored in .gitignore
+├── requirements.txt        # ← very important! - Holds all of the Installed LIBS
+├── .gitignore
+├── main.py                # main script that calls modules
+├── core/                  # base code
+├── modules/               # different paperwork modules
+├── templates/             # jinja2 or docx templates
+├── output/                # generated PDFs, Excel, etc.
+└── data/                  # input files (racks, connections, etc.)
+
+
+
+
+THIS PROJECT
+patch_paperwork/
+├── venv/                   # ← ignored in .gitignore
+├── requirements.txt        # ← very important! - Holds all of the Installed LIBS
+├── .gitignore
+├── main.py                # main script that calls modules
+├── core/                  # base code
+├── modules/               # different paperwork modules
+├── templates/             # jinja2 or docx templates
+├── output/                # generated PDFs, Excel, etc.
+└── data/                  # input files (racks, connections, etc.)
+
+
+
+
+
+
+
+├── main_gui.py
+├── config.py
+├── models/
+│   ├── __init__.py
+│   ├── amp_rack.py
+│   └── project.py
+├── modules/
+│   ├── gui/
+│   │   ├── __init__.py
+│   │   ├── main_window.py
+│   │   └── new_project_tab.py
+├── data/                  # (empty folder for saved .yaml files)
+└── templates/             # (we'll use later for PDF)

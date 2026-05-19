@@ -1,0 +1,35 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Generated output files (important for your paperwork tool!)
+output/
+*.pdf
+*.xlsx
+*.docx
+*.png
+*.jpg
+
+# Data files that might contain sensitive info or change often
+data/*.csv
+data/*.xlsx
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# VS Code specific
+.vscode/
+*.code-workspace
+
+# Development extras (uncomment if you use them)
+# .env
+# pytest.ini
+# coverage.xml
