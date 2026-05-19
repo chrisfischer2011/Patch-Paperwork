@@ -28,7 +28,7 @@ class NewProjectTab(ctk.CTkFrame):
                      command=self.save_current_project).pack(side="left", padx=5)   # <-- NEW
         
         ctk.CTkButton(btn_frame, text="Load Project", 
-                     command=self.load_project_file).pack(side="left", padx=5)     # <-- NEW
+                     command=self.load_project_file).pack(side="left", padx=5)
         
         ctk.CTkButton(btn_frame, text="Generate Patch Paperwork", 
                      command=self.generate_paperwork).pack(side="left", padx=5)
@@ -45,13 +45,16 @@ class NewProjectTab(ctk.CTkFrame):
             messagebox.showinfo("Success", f"Project saved successfully!")
 
     def load_project_file(self):
-        """Load and update the current project"""
-        loaded = load_project()
-        if loaded:
+        """Load project and update GUI"""
+        loaded = load_project()          # This should open the file dialog
+        if loaded is not None:
             self.project = loaded
+            # Update the name entry field
             self.name_entry.delete(0, "end")
             self.name_entry.insert(0, self.project.project_name)
-            messagebox.showinfo("Loaded", f"Project '{self.project.project_name}' loaded.")
+            messagebox.showinfo("Success", f"Project '{self.project.project_name}' loaded successfully!")
+            # Optional: clear and repopulate rack list later when we add the treeview
+        # If user cancelled the dialog, loaded will be None → do nothing
 
     def add_rack(self):
         # Placeholder for now - we'll expand this next

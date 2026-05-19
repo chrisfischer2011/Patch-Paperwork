@@ -32,13 +32,14 @@ def save_project(project: AmpProject):
         return None
 
 def load_project() -> AmpProject | None:
+    """Load project from user-chosen JSON file"""
     file_path = filedialog.askopenfilename(
         initialdir=Path.home() / "Documents",
         filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
     )
     
     if not file_path:
-        return None
+        return None   # User cancelled → return None
 
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -47,5 +48,5 @@ def load_project() -> AmpProject | None:
         messagebox.showinfo("Loaded", f"Loaded project: {project.project_name}")
         return project
     except Exception as e:
-        messagebox.showerror("Load Error", str(e))
+        messagebox.showerror("Load Error", f"Failed to load file:\n{str(e)}")
         return None
