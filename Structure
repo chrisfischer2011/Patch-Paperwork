@@ -12,6 +12,10 @@ Folder Name/
 └── data/                  # input files (racks, connections, etc.)
 
 
+' Commands for New git Version
+
+' git add .
+' git commit -m "Initial commit: Base structure for Patch Paperwork app"
 
 
 THIS PROJECT
