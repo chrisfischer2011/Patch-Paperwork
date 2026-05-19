@@ -5,10 +5,9 @@ from tkinter import filedialog, messagebox
 from models.project import AmpProject
 
 def save_project(project: AmpProject):
-    """Save project to user-chosen location and filename"""
     if not project.project_name:
         messagebox.showwarning("Save", "Please enter a project name first!")
-        return
+        return None
 
     default_name = f"{project.project_name.replace(' ', '_')}.json"
     
@@ -20,7 +19,7 @@ def save_project(project: AmpProject):
     )
     
     if not file_path:
-        return  # User cancelled
+        return None
 
     try:
         data = project.model_dump(mode='json')
@@ -30,9 +29,9 @@ def save_project(project: AmpProject):
         return file_path
     except Exception as e:
         messagebox.showerror("Save Error", str(e))
+        return None
 
 def load_project() -> AmpProject | None:
-    """Load project from user-chosen JSON file"""
     file_path = filedialog.askopenfilename(
         initialdir=Path.home() / "Documents",
         filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
