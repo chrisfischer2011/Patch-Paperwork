@@ -11,15 +11,19 @@ class NewProjectTab(ctk.CTkFrame):
         
         self.project = AmpProject(project_name="New Amp Project")  # Start with empty project
         
-        # Project Name
-        ctk.CTkLabel(self, text="Project Name:").pack(pady=5)
-        self.name_entry = ctk.CTkEntry(self, width=300)
-        self.name_entry.insert(0, self.project.project_name)
-        self.name_entry.pack(pady=5)
+        # Project Name Row (horizontal)
+        name_frame = ctk.CTkFrame(self, fg_color="transparent")
+        name_frame.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(name_frame, text="Project Name:", width=120, anchor="w").pack(side="left", padx=(0, 10))
         
-        # Buttons frame
+        self.name_entry = ctk.CTkEntry(name_frame, height=35)
+        self.name_entry.pack(side="left", fill="x", expand=True)
+        self.name_entry.insert(0, self.project.project_name)
+
+        # Buttons frame (below)
         btn_frame = ctk.CTkFrame(self)
-        btn_frame.pack(pady=10)
+        btn_frame.pack(pady=15)
         
         ctk.CTkButton(btn_frame, text="+ Add 112 Amp Rack", 
                      command=self.add_rack).pack(side="left", padx=5)
