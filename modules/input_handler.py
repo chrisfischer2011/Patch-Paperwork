@@ -50,3 +50,31 @@ def load_project() -> AmpProject | None:
     except Exception as e:
         messagebox.showerror("Load Error", f"Failed to load file:\n{str(e)}")
         return None
+    
+def save_current_project(tab_instance):
+    """
+    Reusable function that can be called from ANYWHERE.
+    - Updates project name from the GUI entry
+    - Calls the pure save handler
+    - Returns the file_path or None
+    """
+    from tkinter import messagebox   # keep imports local when possible
+    
+    if not hasattr(tab_instance, 'project') or not hasattr(tab_instance, 'name_entry'):
+        messagebox.showerror("Error", "Invalid tab instance passed to save.")
+        return None
+    
+    # Update name from GUI
+    tab_instance.project.project_name = tab_instance.name_entry.get().strip()
+    
+    if not tab_instance.project.project_name:
+        messagebox.showwarning("Save", "Project name cannot be empty!")
+        return None
+    
+    # Call the pure save function
+    file_path = save_project(tab_instance.project)
+    
+    if file_path:
+        messagebox.showinfo("Success", f"Project saved successfully!")
+        return file_path
+    return None

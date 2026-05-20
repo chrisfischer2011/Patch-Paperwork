@@ -34,15 +34,9 @@ class NewProjectTab(ctk.CTkFrame):
                      command=self.generate_paperwork).pack(side="left", padx=5)
 
     def save_current_project(self):
-        """Update project name from entry then save"""
-        self.project.project_name = self.name_entry.get().strip()
-        if not self.project.project_name:
-            messagebox.showwarning("Save", "Project name cannot be empty!")
-            return
-        
-        file_path = save_project(self.project)   # <-- calls the handler
-        if file_path:
-            messagebox.showinfo("Success", f"Project saved successfully!")
+        """Delegate to the reusable handler in input_handler"""
+        from modules.input_handler import save_current_project
+        return save_current_project(self)
 
     def load_project_file(self):
         """Load project and update GUI"""

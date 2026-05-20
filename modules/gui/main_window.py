@@ -45,3 +45,12 @@ class MainWindow(ctk.CTk):
     def show_generate(self):
         from tkinter import messagebox
         messagebox.showinfo("Generate", "Paperwork generation coming soon")
+
+    def save_project_global(self):
+        """Main window Save button - reuses the same function"""
+        from modules.input_handler import save_current_project
+        if hasattr(self, 'new_project_tab'):
+            return save_current_project(self.new_project_tab)
+        else:
+            from tkinter import messagebox
+            messagebox.showwarning("Save", "No active project tab.")
