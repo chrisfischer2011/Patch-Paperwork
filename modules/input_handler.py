@@ -52,29 +52,39 @@ def load_project() -> AmpProject | None:
         return None
     
 def save_current_project(tab_instance):
-    """
-    Reusable function that can be called from ANYWHERE.
-    - Updates project name from the GUI entry
-    - Calls the pure save handler
-    - Returns the file_path or None
-    """
-    from tkinter import messagebox   # keep imports local when possible
+    """Reusable Save - can be called from main_window sidebar or tab"""
+    from tkinter import messagebox
     
     if not hasattr(tab_instance, 'project') or not hasattr(tab_instance, 'name_entry'):
-        messagebox.showerror("Error", "Invalid tab instance passed to save.")
+        messagebox.showerror("Error", "Invalid tab passed to save.")
         return None
     
-    # Update name from GUI
+    # Update name from GUI field
     tab_instance.project.project_name = tab_instance.name_entry.get().strip()
     
     if not tab_instance.project.project_name:
         messagebox.showwarning("Save", "Project name cannot be empty!")
         return None
     
-    # Call the pure save function
     file_path = save_project(tab_instance.project)
-    
     if file_path:
         messagebox.showinfo("Success", f"Project saved successfully!")
-        return file_path
+    return file_path
+
+
+def load_current_project(tab_instance):
+    """Reusable Load - mirrors save pattern"""
+    from tkinter import messagebox
+    
+    if not hasattr(tab_instance, 'project') or not hasattr(tab_instance, 'name_entry'):
+        messagebox.showerror("Error", "Invalid tab passed to load.")
+        return None
+    
+    loaded = load_project()   # This opens the file dialog
+    if loaded is not None:
+        tab_instance.project = loaded
+        tab_instance.name_entry.delete(0, "end")
+        tab_instance.name_entry.insert(0, loaded.project_name)
+        messagebox.showinfo("Success", f"Project '{loaded.project_name}' loaded successfully!")
+        return loaded
     return None

@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from .new_project_tab import NewProjectTab
+from .project_tab import NewProjectTab
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -22,6 +22,7 @@ class MainWindow(ctk.CTk):
 
         ctk.CTkButton(sidebar, text="New Project", height=45, command=self.show_new_project).pack(pady=8, padx=20, fill="x")
         ctk.CTkButton(sidebar, text="Load Project", height=45, command=self.show_load).pack(pady=8, padx=20, fill="x")
+        ctk.CTkButton(sidebar, text="Save Project", height=45, command=self.show_save).pack(pady=8, padx=20, fill="x")
         ctk.CTkButton(sidebar, text="Generate Paperwork", height=45, command=self.show_generate).pack(pady=8, padx=20, fill="x")
 
     def create_main_content(self):
@@ -39,18 +40,19 @@ class MainWindow(ctk.CTk):
         self.current_tab.pack(fill="both", expand=True)
 
     def show_load(self):
-        from tkinter import messagebox
-        messagebox.showinfo("Load", "Load Project coming soon")
+        """Sidebar Load button - reuses the same function"""
+        if self.current_tab and isinstance(self.current_tab, NewProjectTab):
+            from modules.input_handler import load_current_project
+            load_current_project(self.current_tab)
+        else:
+            from tkinter import messagebox
+            messagebox.showwarning("Load", "Please open a project tab first.")
+
+    def show_save(self):
+        if self.current_tab and isinstance(self.current_tab, NewProjectTab):
+            from modules.input_handler import save_current_project
+            save_current_project(self.current_tab)
 
     def show_generate(self):
         from tkinter import messagebox
         messagebox.showinfo("Generate", "Paperwork generation coming soon")
-
-    def save_project_global(self):
-        """Main window Save button - reuses the same function"""
-        from modules.input_handler import save_current_project
-        if hasattr(self, 'new_project_tab'):
-            return save_current_project(self.new_project_tab)
-        else:
-            from tkinter import messagebox
-            messagebox.showwarning("Save", "No active project tab.")
