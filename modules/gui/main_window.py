@@ -1,5 +1,7 @@
 import customtkinter as ctk
+from tkinter import messagebox
 from .project_tab import NewProjectTab
+from models.rack_table import RackTable
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -11,6 +13,8 @@ class MainWindow(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+        self.rack_table = RackTable()          # Shared instance
+        
         self.create_sidebar()
         self.create_main_content()
 
@@ -20,7 +24,7 @@ class MainWindow(ctk.CTk):
 
         ctk.CTkLabel(sidebar, text="MENU", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=30)
 
-        ctk.CTkButton(sidebar, text="New Project", height=45, command=self.show_new_project).pack(pady=8, padx=20, fill="x")
+        ctk.CTkButton(sidebar, text="New Project", height=45, command=self.new_project).pack(pady=8, padx=20, fill="x")
         ctk.CTkButton(sidebar, text="Load Project", height=45, command=self.show_load).pack(pady=8, padx=20, fill="x")
         ctk.CTkButton(sidebar, text="Save Project", height=45, command=self.show_save).pack(pady=8, padx=20, fill="x")
         ctk.CTkButton(sidebar, text="Generate Paperwork", height=45, command=self.show_generate).pack(pady=8, padx=20, fill="x")
@@ -34,18 +38,28 @@ class MainWindow(ctk.CTk):
         self.current_tab = None
         self.show_new_project()
 
+    def new_project(self):
+        if messagebox.askyesno("New Project", "Clear all racks and start a fresh project?"):
+            self.rack_table.reset()
+            if self.current_tab:
+                self.current_tab.destroy()
+            self.current_tab = NewProjectTab(self.main_frame, rack_table=self.rack_table)
+            self.current_tab.pack(fill="both", expand=True)
+            messagebox.showinfo("New Project", "Fresh project started — table cleared.")
+
     def show_new_project(self):
-        if self.current_tab: self.current_tab.destroy()
-        self.current_tab = NewProjectTab(self.main_frame)
+        """Called on startup"""
+        if self.current_tab:
+            self.current_tab.destroy()
+        self.current_tab = NewProjectTab(self.main_frame, rack_table=self.rack_table)
         self.current_tab.pack(fill="both", expand=True)
 
+    # ... rest of your load/save/generate methods stay the same
     def show_load(self):
-        """Sidebar Load button - reuses the same function"""
         if self.current_tab and isinstance(self.current_tab, NewProjectTab):
             from modules.input_handler import load_current_project
             load_current_project(self.current_tab)
         else:
-            from tkinter import messagebox
             messagebox.showwarning("Load", "Please open a project tab first.")
 
     def show_save(self):
@@ -54,5 +68,4 @@ class MainWindow(ctk.CTk):
             save_current_project(self.current_tab)
 
     def show_generate(self):
-        from tkinter import messagebox
         messagebox.showinfo("Generate", "Paperwork generation coming soon")
