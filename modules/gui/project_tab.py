@@ -1,56 +1,58 @@
-# modules/gui/project_tab.py
 import customtkinter as ctk
-from tkinter import messagebox
-from models.project import AmpProject, AmpRack
-from modules.amp_rack_handler import create_amp_rack
+from tkinter import ttk, messagebox
+from models.rack_table import RackTable
 
 class NewProjectTab(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         
-        self.project = AmpProject(project_name="New Amp Project")
+        self.rack_table = RackTable()   # SQLite + Pandas backend
         
         # Title
         title = ctk.CTkLabel(self, text="Project Management", 
                             font=ctk.CTkFont(size=24, weight="bold"))
         title.pack(pady=20)
         
-        # ONLY "ADD RACK" button
+        # ADD RACK button
         add_btn = ctk.CTkButton(self, text="ADD RACK", 
-                               height=50, width=200,
+                               height=50, width=220,
                                font=ctk.CTkFont(size=16, weight="bold"),
                                command=self.show_add_rack_dialog)
-        add_btn.pack(pady=30)
+        add_btn.pack(pady=20)
         
-        # List of added racks
-        list_label = ctk.CTkLabel(self, text="Added Racks:", 
-                                 font=ctk.CTkFont(size=14, weight="bold"))
-        list_label.pack(anchor="w", padx=40, pady=(20,5))
+        # Treeview Table
+        self.tree = ttk.Treeview(self, show="headings", height=15)
+        self.tree.pack(fill="both", expand=True, padx=20, pady=10)
         
-        self.rack_list = ctk.CTkTextbox(self, height=300)
-        self.rack_list.pack(fill="both", expand=True, padx=40, pady=5)
+        # Define columns
+        columns = [
+            "Rack Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
+            "AES Input", "Analog Inp", "Distro 1", "Distro 2",
+            "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
+            "Signal In", "Signal Thrc", "Signal Out", "Signal Out 2"
+        ]
+        self.tree["columns"] = columns
         
-        self.refresh_rack_list()
+        # Headings + width
+        for col in columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=100, anchor="w")
+        
+        self.refresh_table()
 
     def show_add_rack_dialog(self):
         dialog = ctk.CTkToplevel(self)
         dialog.title("Add New Rack")
         dialog.geometry("420x280")
-        dialog.grab_set()  # modal
+        dialog.grab_set()
         
-        # Rack Type
-        ctk.CTkLabel(dialog, text="Rack Type:", 
-                    font=ctk.CTkFont(size=14)).pack(anchor="w", padx=40, pady=(30,5))
-        
+        ctk.CTkLabel(dialog, text="Rack Type:", font=ctk.CTkFont(size=14)).pack(anchor="w", padx=40, pady=(30,5))
         type_var = ctk.StringVar(value="112")
         type_combo = ctk.CTkComboBox(dialog, values=["223", "117", "112", "112(AIS)"],
                                     variable=type_var, width=200)
         type_combo.pack(padx=40, pady=5)
         
-        # Rack Number
-        ctk.CTkLabel(dialog, text="Rack Number:", 
-                    font=ctk.CTkFont(size=14)).pack(anchor="w", padx=40, pady=(15,5))
-        
+        ctk.CTkLabel(dialog, text="Rack Number:", font=ctk.CTkFont(size=14)).pack(anchor="w", padx=40, pady=(15,5))
         num_entry = ctk.CTkEntry(dialog, width=200, placeholder_text="e.g. R01")
         num_entry.pack(padx=40, pady=5)
         
@@ -62,27 +64,18 @@ class NewProjectTab(ctk.CTkFrame):
                 messagebox.showwarning("Missing Info", "Please enter a Rack Number")
                 return
             
-            # Create and add rack
-            new_rack = create_amp_rack(
-                rack_id=rnum,
-                rack_type=rtype
-            )
-            self.project.racks.append(new_rack)
+            self.rack_table.add_rack(rack_type=rtype, rack_number=rnum)
             
             messagebox.showinfo("Success", f"Rack Added → {rtype} - {rnum}")
             dialog.destroy()
-            self.refresh_rack_list()
+            self.refresh_table()
         
-        ctk.CTkButton(dialog, text="ADD", command=on_add, 
-                     height=40, width=120).pack(pady=25)
+        ctk.CTkButton(dialog, text="ADD", command=on_add, height=40, width=120).pack(pady=25)
 
-    def refresh_rack_list(self):
-        self.rack_list.delete("0.0", "end")
-        if not self.project.racks:
-            self.rack_list.insert("0.0", "No racks added yet.")
-            return
+    def refresh_table(self):
+        # Clear existing items
+        for item in self.tree.get_children():
+            self.tree.delete(item)
         
-        text = ""
-        for rack in self.project.racks:
-            text += f"• Rack {rack.rack_id}  |  Type: {rack.rack_type}\n"
-        self.rack_list.insert("0.0", text)
+        for row in self.rack_table.get_all_rows():
+            self.tree.insert("", "end", values=row)
