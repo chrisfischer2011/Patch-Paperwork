@@ -55,17 +55,20 @@ class MainWindow(ctk.CTk):
         self.current_tab.pack(fill="both", expand=True)
 
     # ... rest of your load/save/generate methods stay the same
-    def show_load(self):
-        if self.current_tab and isinstance(self.current_tab, NewProjectTab):
-            from modules.input_handler import load_current_project
-            load_current_project(self.current_tab)
-        else:
-            messagebox.showwarning("Load", "Please open a project tab first.")
-
     def show_save(self):
-        if self.current_tab and isinstance(self.current_tab, NewProjectTab):
+        if hasattr(self, 'current_tab') and isinstance(self.current_tab, NewProjectTab):
             from modules.input_handler import save_current_project
             save_current_project(self.current_tab)
+        else:
+            messagebox.showwarning("Save", "No project tab open.")
+
+    def show_load(self):
+        if hasattr(self, 'current_tab') and isinstance(self.current_tab, NewProjectTab):
+            from modules.input_handler import load_current_project
+            load_current_project(self.current_tab)
+            self.current_tab.refresh_table()   # Refresh after load
+        else:
+            messagebox.showwarning("Load", "No project tab open.")
 
     def show_generate(self):
         messagebox.showinfo("Generate", "Paperwork generation coming soon")
