@@ -17,11 +17,6 @@ class NewProjectTab(ctk.CTkFrame):
         self.name_entry = ctk.CTkEntry(name_frame, textvariable=self.project_name, width=300, height=35)
         self.name_entry.pack(side="left")
 
-        # Title (optional, can remove if redundant)
-        title = ctk.CTkLabel(self, text="Project Management", 
-                            font=ctk.CTkFont(size=20, weight="bold"))
-        title.pack(pady=10)
-
         # ADD RACK button
         add_btn = ctk.CTkButton(self, text="ADD RACK", 
                                height=50, width=220,
