@@ -4,7 +4,7 @@ from .project_tab import NewProjectTab
 class MainWindow(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Adamson Amp Rack Paperwork Generator")
+        self.title("AMP PATCH Generator")
         self.geometry("1200x800")
         self.minsize(1000, 700)
 
@@ -18,7 +18,7 @@ class MainWindow(ctk.CTk):
         sidebar = ctk.CTkFrame(self, width=220, corner_radius=0)
         sidebar.grid(row=0, column=0, sticky="nswe")
 
-        ctk.CTkLabel(sidebar, text="Amp Rack Tool", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=30)
+        ctk.CTkLabel(sidebar, text="MENU", font=ctk.CTkFont(size=22, weight="bold")).pack(pady=30)
 
         ctk.CTkButton(sidebar, text="New Project", height=45, command=self.show_new_project).pack(pady=8, padx=20, fill="x")
         ctk.CTkButton(sidebar, text="Load Project", height=45, command=self.show_load).pack(pady=8, padx=20, fill="x")
