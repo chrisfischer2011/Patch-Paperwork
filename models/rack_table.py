@@ -14,7 +14,7 @@ class RackTable:
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS racks (
                     id INTEGER PRIMARY KEY,
-                    "Rack Locaation" TEXT,
+                    "Rack Location" TEXT,
                     "Rack #" TEXT,
                     "Rack Type" TEXT,
                     "Switch Cor" TEXT,
@@ -42,6 +42,12 @@ class RackTable:
                 INSERT INTO racks ("Rack #", "Rack Type")
                 VALUES (?, ?)
             ''', (rack_number, rack_type))
+        self.df = self.load_to_pandas()
+
+    def reset(self):
+        """Clear all racks for a New Project"""
+        with self.conn:
+            self.conn.execute("DELETE FROM racks")
         self.df = self.load_to_pandas()
 
     def load_to_pandas(self):
