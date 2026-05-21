@@ -26,7 +26,7 @@ class NewProjectTab(ctk.CTkFrame):
         
         # Define columns
         columns = [
-            "Rack Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
+            "#", "Rack Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
             "AES Input", "Analog Inp", "Distro 1", "Distro 2",
             "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
             "Signal In", "Signal Thrc", "Signal Out", "Signal Out 2"
