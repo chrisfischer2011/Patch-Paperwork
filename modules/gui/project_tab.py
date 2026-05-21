@@ -7,25 +7,34 @@ class NewProjectTab(ctk.CTkFrame):
         super().__init__(master)
         
         self.rack_table = rack_table or RackTable()
+        self.project_name = ctk.StringVar(value="New Project")
+
+        # Project Name Row
+        name_frame = ctk.CTkFrame(self, fg_color="transparent")
+        name_frame.pack(fill="x", padx=20, pady=10)
         
-        # Title
+        ctk.CTkLabel(name_frame, text="Project:", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=(0,10))
+        self.name_entry = ctk.CTkEntry(name_frame, textvariable=self.project_name, width=300, height=35)
+        self.name_entry.pack(side="left")
+
+        # Title (optional, can remove if redundant)
         title = ctk.CTkLabel(self, text="Project Management", 
-                            font=ctk.CTkFont(size=24, weight="bold"))
-        title.pack(pady=20)
-        
-        # ADD RACK button ONLY
+                            font=ctk.CTkFont(size=20, weight="bold"))
+        title.pack(pady=10)
+
+        # ADD RACK button
         add_btn = ctk.CTkButton(self, text="ADD RACK", 
                                height=50, width=220,
                                font=ctk.CTkFont(size=16, weight="bold"),
                                command=self.show_add_rack_dialog)
         add_btn.pack(pady=20)
-        
+
         # Treeview Table
         self.tree = ttk.Treeview(self, show="headings", height=18)
         self.tree.pack(fill="both", expand=True, padx=20, pady=10)
         
         columns = [
-            "Rack Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
+            "Rack Local", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
             "AES Input", "Analog Inp", "Distro 1", "Distro 2",
             "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
             "Signal In", "Signal Thrc", "Signal Out", "Signal Out 2"
