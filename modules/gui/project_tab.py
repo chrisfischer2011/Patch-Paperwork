@@ -3,32 +3,29 @@ from tkinter import ttk, messagebox
 from models.rack_table import RackTable
 
 class NewProjectTab(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, rack_table=None):
         super().__init__(master)
         
-        self.rack_table = RackTable()   # SQLite backend
+        self.rack_table = rack_table or RackTable()
         
-        # Title + New Project Button
-        top_frame = ctk.CTkFrame(self, fg_color="transparent")
-        top_frame.pack(fill="x", padx=20, pady=10)
-        
-        title = ctk.CTkLabel(top_frame, text="Project Management", 
+        # Title
+        title = ctk.CTkLabel(self, text="Project Management", 
                             font=ctk.CTkFont(size=24, weight="bold"))
-        title.pack(side="left")
+        title.pack(pady=20)
         
-        # ADD RACK button
+        # ADD RACK button ONLY
         add_btn = ctk.CTkButton(self, text="ADD RACK", 
                                height=50, width=220,
                                font=ctk.CTkFont(size=16, weight="bold"),
                                command=self.show_add_rack_dialog)
-        add_btn.pack(pady=15)
+        add_btn.pack(pady=20)
         
         # Treeview Table
         self.tree = ttk.Treeview(self, show="headings", height=18)
         self.tree.pack(fill="both", expand=True, padx=20, pady=10)
         
         columns = [
-            "#","Rack Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
+            "Rack Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
             "AES Input", "Analog Inp", "Distro 1", "Distro 2",
             "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
             "Signal In", "Signal Thrc", "Signal Out", "Signal Out 2"
@@ -41,7 +38,6 @@ class NewProjectTab(ctk.CTkFrame):
         self.refresh_table()
 
     def show_add_rack_dialog(self):
-        # (same as before - unchanged)
         dialog = ctk.CTkToplevel(self)
         dialog.title("Add New Rack")
         dialog.geometry("420x280")
@@ -73,6 +69,5 @@ class NewProjectTab(ctk.CTkFrame):
     def refresh_table(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
-        
         for row in self.rack_table.get_all_rows():
             self.tree.insert("", "end", values=row)
