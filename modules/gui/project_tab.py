@@ -39,8 +39,8 @@ class NewProjectTab(ctk.CTkFrame):
 
         # Current Headers
         columns = [
-            "Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
-            "AES Input", "Analog Inp", "Distro 1", "Distro 2",
+            "Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
+            "AES Input", "Analog Input", "Distro 1", "Distro 2",
             "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
             "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"
         ]

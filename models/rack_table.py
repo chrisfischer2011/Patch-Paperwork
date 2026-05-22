@@ -1,6 +1,5 @@
 import sqlite3
 import pandas as pd
-import os
 
 class RackTable:
     def __init__(self, db_path="project_data.db"):
@@ -17,10 +16,10 @@ class RackTable:
                     "Location" TEXT,
                     "Rack #" TEXT,
                     "Rack Type" TEXT,
-                    "Switch Cor" TEXT,
+                    "Switch Config" TEXT,
                     "Off Ramp" TEXT,
                     "AES Input" TEXT,
-                    "Analog Inp" TEXT,
+                    "Analog Input" TEXT,
                     "Distro 1" TEXT,
                     "Distro 2" TEXT,
                     "Maps 1" TEXT,
@@ -53,10 +52,10 @@ class RackTable:
         return pd.read_sql_query("SELECT * FROM racks", self.conn)
 
     def get_all_rows(self):
-        """Return rows WITHOUT id for Treeview"""
+        """Return rows WITHOUT id for Treeview - MATCHING CURRENT HEADERS"""
         df = pd.read_sql_query('''
-            SELECT "Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
-                   "AES Input", "Analog Inp", "Distro 1", "Distro 2",
+            SELECT "Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
+                   "AES Input", "Analog Input", "Distro 1", "Distro 2",
                    "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
                    "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"
             FROM racks
