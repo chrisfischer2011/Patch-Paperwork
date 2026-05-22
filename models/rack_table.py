@@ -64,8 +64,9 @@ class RackTable:
         return df.values.tolist()
     
     def get_all_rows_with_id(self):
-        """Return all rows including the id for database updates"""
-        return pd.read_sql_query("SELECT * FROM racks", self.conn).values.tolist()
+        """Return all rows including the hidden 'id' column for updates"""
+        df = pd.read_sql_query("SELECT * FROM racks", self.conn)
+        return df.values.tolist()
 
     def close(self):
         self.conn.close()

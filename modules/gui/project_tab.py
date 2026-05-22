@@ -37,7 +37,7 @@ class NewProjectTab(ctk.CTkFrame):
         tree_frame.grid_columnconfigure(0, weight=1)
         tree_frame.grid_rowconfigure(0, weight=1)
 
-        # === Updated Headers (per your latest changes) ===
+        # Current Headers
         columns = [
             "Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
             "AES Input", "Analog Inp", "Distro 1", "Distro 2",
@@ -50,7 +50,6 @@ class NewProjectTab(ctk.CTkFrame):
             self.tree.heading(col, text=col)
             self.tree.column(col, width=130, anchor="w", minwidth=90)
 
-        # Enable editing
         self.tree.bind("<Double-1>", self.on_double_click)
 
         self.refresh_table()
@@ -83,6 +82,7 @@ class NewProjectTab(ctk.CTkFrame):
             new_values[col_index] = new_value
             self.tree.item(item, values=new_values)
             
+            # Save to database
             self.update_rack_in_db(item, col_name, new_value)
             entry.destroy()
 
@@ -94,13 +94,13 @@ class NewProjectTab(ctk.CTkFrame):
             row_index = self.tree.index(tree_item)
             rows_with_id = self.rack_table.get_all_rows_with_id()
             if row_index < len(rows_with_id):
-                row_id = rows_with_id[row_index][0]
+                row_id = rows_with_id[row_index][0]  # id is first column
                 
                 with self.rack_table.conn:
                     self.rack_table.conn.execute(f'UPDATE racks SET "{col_name}" = ? WHERE id = ?', 
                                                (new_value, row_id))
                 
-                self.rack_table.df = self.rack_table.load_to_pandas()
+                self.rack_table.df = self.rack_table.load_to_pandas()   # Refresh cache
         except Exception as e:
             print(f"Database update error: {e}")
 
