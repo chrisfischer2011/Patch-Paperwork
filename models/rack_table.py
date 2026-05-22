@@ -53,18 +53,18 @@ class RackTable:
         return pd.read_sql_query("SELECT * FROM racks", self.conn)
 
     def get_all_rows(self):
-        """Return rows WITHOUT the id column"""
-        df = pd.read_sql_query("""
-            SELECT "Rack Local", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
+        """Return rows WITHOUT id for Treeview"""
+        df = pd.read_sql_query('''
+            SELECT "Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
                    "AES Input", "Analog Inp", "Distro 1", "Distro 2",
                    "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
-                   "Signal In", "Signal Thrc", "Signal Out", "Signal Out 2"
+                   "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"
             FROM racks
-        """, self.conn)
+        ''', self.conn)
         return df.values.tolist()
-    
+
     def get_all_rows_with_id(self):
-        """Return all rows including the hidden 'id' column for updates"""
+        """Return rows WITH id for updates"""
         df = pd.read_sql_query("SELECT * FROM racks", self.conn)
         return df.values.tolist()
 
