@@ -7,7 +7,7 @@ class NewProjectTab(ctk.CTkFrame):
         super().__init__(master)
         self.rack_table = rack_table or RackTable()
         self.project_name = ctk.StringVar(value="New Project")
-        self.entries = []   # List of rows (each row is a list of Entry widgets)
+        self.entries = []  # row -> list of Entry widgets
 
         # Project Name Row
         name_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -16,14 +16,11 @@ class NewProjectTab(ctk.CTkFrame):
         self.name_entry = ctk.CTkEntry(name_frame, textvariable=self.project_name, width=400, height=35)
         self.name_entry.pack(side="left")
 
-        # Buttons
+        # Only ADD RACK button now
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(pady=10)
-        ctk.CTkButton(btn_frame, text="ADD RACK", height=40, width=180,
-                     command=self.show_add_rack_dialog).pack(side="left", padx=10)
-        
-        ctk.CTkButton(btn_frame, text="SAVE ALL", height=40, width=180,
-                     fg_color="green", command=self.save_all_to_db).pack(side="left", padx=10)
+        ctk.CTkButton(btn_frame, text="ADD RACK", height=40, width=200,
+                     command=self.show_add_rack_dialog).pack()
 
         # Scrollable Grid
         self.scroll_frame = ctk.CTkScrollableFrame(self, height=500)
@@ -46,7 +43,6 @@ class NewProjectTab(ctk.CTkFrame):
 
     def load_data_into_grid(self):
         """Clear and reload grid from database"""
-        # Remove only data rows (keep headers)
         for widget in list(self.scroll_frame.grid_slaves()):
             if int(widget.grid_info().get("row", 0)) > 0:
                 widget.destroy()
@@ -60,8 +56,25 @@ class NewProjectTab(ctk.CTkFrame):
                 entry = ctk.CTkEntry(self.scroll_frame, width=130)
                 entry.insert(0, str(value) if value is not None else "")
                 entry.grid(row=row_idx, column=col_idx, padx=3, pady=2)
+                
+                # Auto-save when user leaves the cell
+                entry.bind("<FocusOut>", lambda e, r=row_idx-1, c=col_idx: self.auto_save_cell(r, c))
+                entry.bind("<Return>", lambda e, r=row_idx-1, c=col_idx: self.auto_save_cell(r, c))
+                
                 row_entries.append(entry)
             self.entries.append(row_entries)
+
+    def auto_save_cell(self, row_idx: int, col_idx: int):
+        """Save single cell change to database automatically"""
+        if row_idx >= len(self.entries):
+            return
+        try:
+            new_value = self.entries[row_idx][col_idx].get().strip()
+            # Rebuild full row and save
+            full_row = [entry.get().strip() for entry in self.entries[row_idx]]
+            self.rack_table.update_row(row_idx, full_row)
+        except:
+            pass  # Silent fail - don't annoy user
 
     def show_add_rack_dialog(self):
         dialog = ctk.CTkToplevel(self)
@@ -71,8 +84,7 @@ class NewProjectTab(ctk.CTkFrame):
 
         ctk.CTkLabel(dialog, text="Rack Type:").pack(anchor="w", padx=40, pady=(30,5))
         type_var = ctk.StringVar(value="112")
-        type_combo = ctk.CTkComboBox(dialog, values=["223", "117", "112", "112(AIS)"], 
-                                    variable=type_var, width=200)
+        type_combo = ctk.CTkComboBox(dialog, values=["223", "117", "112", "112(AIS)"], variable=type_var, width=200)
         type_combo.pack(padx=40, pady=5)
 
         ctk.CTkLabel(dialog, text="Rack Number:").pack(anchor="w", padx=40, pady=(15,5))
@@ -85,35 +97,13 @@ class NewProjectTab(ctk.CTkFrame):
             if not rnum:
                 messagebox.showwarning("Missing Info", "Please enter a Rack Number")
                 return
-            
             self.rack_table.add_rack(rack_type=rtype, rack_number=rnum)
-            # messagebox.showinfo("Success", f"Rack Added → {rtype} - {rnum}")  # Optional - can remove
             dialog.destroy()
             self.load_data_into_grid()
 
         add_button = ctk.CTkButton(dialog, text="ADD", command=on_add, height=40, width=120)
         add_button.pack(pady=25)
-
-        # Make Enter key work from Rack Number field
         num_entry.bind("<Return>", lambda e: on_add())
-        
-        # Focus on Rack Number field (most useful)
         num_entry.focus_set()
 
-    def save_all_to_db(self):
-        """Save all grid data to database"""
-        try:
-            all_rows = []
-            for row_entries in self.entries:
-                values = [entry.get().strip() for entry in row_entries]
-                if values[1]:        # Require Rack # to be filled
-                    all_rows.append(values)
-
-            self.rack_table.reset()
-            for values in all_rows:
-                self.rack_table.add_full_row(values)
-
-            messagebox.showinfo("Success", f"Saved {len(all_rows)} racks successfully.")
-            self.load_data_into_grid()   # Refresh grid
-        except Exception as e:
-            messagebox.showerror("Save Error", str(e))
+    # Removed SAVE ALL button entirely

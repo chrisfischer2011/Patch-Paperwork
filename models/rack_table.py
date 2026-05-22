@@ -57,10 +57,42 @@ class RackTable:
         
         self.df = self.load_to_pandas()
 
+    def update_row(self, row_index: int, values: list):
+        """Update an entire row in the database by its position (0-based)"""
+        try:
+            # Get the actual database row id
+            rows_with_id = self.get_all_rows_with_id()
+            if row_index >= len(rows_with_id):
+                return False
+            
+            row_id = rows_with_id[row_index][0]  # First column is the id
+            
+            clean_values = ["" if v == "" or v is None or str(v).lower() == "nan" else v 
+                           for v in values]
+            
+            columns = self.get_column_names()
+            
+            # Build SET clause
+            set_clause = ", ".join([f'"{col}" = ?' for col in columns])
+            
+            with self.conn:
+                self.conn.execute(f'UPDATE racks SET {set_clause} WHERE id = ?', 
+                                (*clean_values, row_id))
+            
+            self.df = self.load_to_pandas()
+            return True
+        except Exception as e:
+            print(f"Error updating row: {e}")
+            return False
+    
     def reset(self):
         with self.conn:
             self.conn.execute("DELETE FROM racks")
         self.df = self.load_to_pandas()
+
+    def get_all_rows_with_id(self):
+        df = pd.read_sql_query("SELECT * FROM racks", self.conn)
+        return df.values.tolist()
 
     def load_to_pandas(self):
         return pd.read_sql_query("SELECT * FROM racks", self.conn)
@@ -87,6 +119,7 @@ class RackTable:
             "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
             "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"
         ]
+    
 
     def close(self):
         self.conn.close()
