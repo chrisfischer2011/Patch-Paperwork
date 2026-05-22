@@ -39,10 +39,10 @@ class NewProjectTab(ctk.CTkFrame):
         tree_frame.grid_rowconfigure(0, weight=1)
 
         # Define columns
-        columns = ["Rack Local", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
+        columns = ["Location", "Rack #", "Rack Type", "Switch Cor", "Off Ramp",
                    "AES Input", "Analog Inp", "Distro 1", "Distro 2",
                    "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
-                   "Signal In", "Signal Thrc", "Signal Out", "Signal Out 2"]
+                   "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"]
 
         self.tree["columns"] = columns
         for col in columns:

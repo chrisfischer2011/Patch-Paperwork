@@ -14,7 +14,7 @@ class RackTable:
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS racks (
                     id INTEGER PRIMARY KEY,
-                    "Rack Local" TEXT,
+                    "Location" TEXT,
                     "Rack #" TEXT,
                     "Rack Type" TEXT,
                     "Switch Cor" TEXT,
@@ -30,7 +30,7 @@ class RackTable:
                     "Maps 5" TEXT,
                     "Maps 6" TEXT,
                     "Signal In" TEXT,
-                    "Signal Thrc" TEXT,
+                    "Signal Thru" TEXT,
                     "Signal Out" TEXT,
                     "Signal Out 2" TEXT
                 )
