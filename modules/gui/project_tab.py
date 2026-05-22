@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from models.rack_table import RackTable
 
 class NewProjectTab(ctk.CTkFrame):
@@ -7,133 +7,93 @@ class NewProjectTab(ctk.CTkFrame):
         super().__init__(master)
         self.rack_table = rack_table or RackTable()
         self.project_name = ctk.StringVar(value="New Project")
+        self.entries = []  # Store all entry widgets for easy access
 
-        # Project Name Row
+        # Project Name
         name_frame = ctk.CTkFrame(self, fg_color="transparent")
         name_frame.pack(fill="x", padx=20, pady=10)
         ctk.CTkLabel(name_frame, text="Project:", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=(0,8))
         self.name_entry = ctk.CTkEntry(name_frame, textvariable=self.project_name, width=400, height=35)
         self.name_entry.pack(side="left")
 
-        # ADD RACK button
-        add_btn = ctk.CTkButton(self, text="ADD RACK", height=50, width=220,
-                               font=ctk.CTkFont(size=16, weight="bold"),
-                               command=self.show_add_rack_dialog)
-        add_btn.pack(pady=15)
+        # Buttons
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(pady=10)
+        ctk.CTkButton(btn_frame, text="ADD RACK", height=40, width=180,
+                     command=self.add_new_row).pack(side="left", padx=10)
+        ctk.CTkButton(btn_frame, text="SAVE ALL", height=40, width=180,
+                     fg_color="green", command=self.save_all_to_db).pack(side="left", padx=10)
 
-        # Scrollable + Editable Treeview
-        tree_frame = ctk.CTkFrame(self)
-        tree_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        # Scrollable Grid Container
+        self.scroll_frame = ctk.CTkScrollableFrame(self, height=500)
+        self.scroll_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
-        self.tree = ttk.Treeview(tree_frame, show="headings", height=20)
-        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
-        hsb = ttk.Scrollbar(tree_frame, orient="horizontal", command=self.tree.xview)
-        
-        self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
-
-        self.tree.grid(row=0, column=0, sticky="nsew")
-        vsb.grid(row=0, column=1, sticky="ns")
-        hsb.grid(row=1, column=0, sticky="ew")
-        tree_frame.grid_columnconfigure(0, weight=1)
-        tree_frame.grid_rowconfigure(0, weight=1)
-
-        # Current Headers
-        columns = [
+        self.headers = [
             "Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
             "AES Input", "Analog Input", "Distro 1", "Distro 2",
             "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
             "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"
         ]
 
-        self.tree["columns"] = columns
-        for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=130, anchor="w", minwidth=90)
+        self.build_grid_headers()
+        self.load_data_into_grid()
 
-        self.tree.bind("<Double-1>", self.on_double_click)
+    def build_grid_headers(self):
+        for col, header in enumerate(self.headers):
+            lbl = ctk.CTkLabel(self.scroll_frame, text=header, font=ctk.CTkFont(size=12, weight="bold"))
+            lbl.grid(row=0, column=col, padx=5, pady=5, sticky="w")
 
-        self.refresh_table()
+    def load_data_into_grid(self):
+        """Clear and reload all rows from database"""
+        # Clear existing data rows
+        for widget in self.scroll_frame.grid_slaves():
+            if int(widget.grid_info()["row"]) > 0:
+                widget.destroy()
 
-    def on_double_click(self, event):
-        region = self.tree.identify("region", event.x, event.y)
-        if region != "cell":
-            return
+        self.entries.clear()
+        rows = self.rack_table.get_all_rows()
 
-        column = self.tree.identify_column(event.x)
-        item = self.tree.identify_row(event.y)
-        if not item:
-            return
+        for row_idx, row_data in enumerate(rows, start=1):
+            row_entries = []
+            for col_idx, value in enumerate(row_data):
+                entry = ctk.CTkEntry(self.scroll_frame, width=120)
+                entry.insert(0, str(value) if value is not None else "")
+                entry.grid(row=row_idx, column=col_idx, padx=2, pady=2)
+                row_entries.append(entry)
+            self.entries.append(row_entries)
 
-        col_index = int(column[1:]) - 1
-        col_name = self.tree["columns"][col_index]
-        current_values = self.tree.item(item, "values")
-        current_value = current_values[col_index]
+    def add_new_row(self):
+        """Add a new blank row directly in the grid"""
+        row_entries = []
+        row_idx = len(self.entries) + 1
+        
+        for col_idx in range(len(self.headers)):
+            entry = ctk.CTkEntry(self.scroll_frame, width=120)
+            if col_idx == 2:   # Default Rack Type
+                entry.insert(0, "112")
+            entry.grid(row=row_idx, column=col_idx, padx=2, pady=2)
+            row_entries.append(entry)
+        
+        self.entries.append(row_entries)
+        messagebox.showinfo("New Row", "New row added at the bottom. Fill it and click SAVE ALL.")
 
-        x, y, width, height = self.tree.bbox(item, column)
-        entry = ttk.Entry(self.tree)
-        entry.place(x=x, y=y, width=width, height=height)
-        entry.insert(0, current_value)
-        entry.focus()
-        entry.select_range(0, "end")
-
-        def save_edit(event=None):
-            new_value = entry.get().strip()
-            new_values = list(current_values)
-            new_values[col_index] = new_value
-            self.tree.item(item, values=new_values)
-            
-            # Save to database
-            self.update_rack_in_db(item, col_name, new_value)
-            entry.destroy()
-
-        entry.bind("<Return>", save_edit)
-        entry.bind("<FocusOut>", save_edit)
-
-    def update_rack_in_db(self, tree_item, col_name, new_value):
+    def save_all_to_db(self):
+        """Save all grid data back to SQLite"""
         try:
-            row_index = self.tree.index(tree_item)
-            rows_with_id = self.rack_table.get_all_rows_with_id()
-            if row_index < len(rows_with_id):
-                row_id = rows_with_id[row_index][0]  # id is first column
+            self.rack_table.reset()  # Clear old data
+            
+            for row_entries in self.entries:
+                values = [entry.get().strip() for entry in row_entries]
+                if not values[1]:  # Skip if Rack # is empty
+                    continue
                 
-                with self.rack_table.conn:
-                    self.rack_table.conn.execute(f'UPDATE racks SET "{col_name}" = ? WHERE id = ?', 
-                                               (new_value, row_id))
-                
-                self.rack_table.df = self.rack_table.load_to_pandas()   # Refresh cache
+                self.rack_table.add_full_row(values)
+            
+            messagebox.showinfo("Saved", "All changes saved to database successfully!")
+            self.load_data_into_grid()   # Refresh grid
         except Exception as e:
-            print(f"Database update error: {e}")
+            messagebox.showerror("Save Error", str(e))
 
     def show_add_rack_dialog(self):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Add New Rack")
-        dialog.geometry("420x280")
-        dialog.grab_set()
-
-        ctk.CTkLabel(dialog, text="Rack Type:").pack(anchor="w", padx=40, pady=(30,5))
-        type_var = ctk.StringVar(value="112")
-        type_combo = ctk.CTkComboBox(dialog, values=["223", "117", "112", "112(AIS)"], variable=type_var, width=200)
-        type_combo.pack(padx=40, pady=5)
-
-        ctk.CTkLabel(dialog, text="Rack Number:").pack(anchor="w", padx=40, pady=(15,5))
-        num_entry = ctk.CTkEntry(dialog, width=200, placeholder_text="e.g. R01")
-        num_entry.pack(padx=40, pady=5)
-
-        def on_add():
-            rtype = type_var.get()
-            rnum = num_entry.get().strip()
-            if not rnum:
-                messagebox.showwarning("Missing Info", "Please enter a Rack Number")
-                return
-            self.rack_table.add_rack(rack_type=rtype, rack_number=rnum)
-            messagebox.showinfo("Success", f"Rack Added → {rtype} - {rnum}")
-            dialog.destroy()
-            self.refresh_table()
-
-        ctk.CTkButton(dialog, text="ADD", command=on_add, height=40, width=120).pack(pady=25)
-
-    def refresh_table(self):
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        for row in self.rack_table.get_all_rows():
-            self.tree.insert("", "end", values=row)
+        # Optional fallback - kept for now
+        pass

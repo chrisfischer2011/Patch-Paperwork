@@ -52,7 +52,7 @@ class RackTable:
         return pd.read_sql_query("SELECT * FROM racks", self.conn)
 
     def get_all_rows(self):
-        """Return rows WITHOUT id for Treeview - MATCHING CURRENT HEADERS"""
+        """Return rows WITHOUT id for Treeview"""
         df = pd.read_sql_query('''
             SELECT "Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
                    "AES Input", "Analog Input", "Distro 1", "Distro 2",
@@ -66,6 +66,22 @@ class RackTable:
         """Return rows WITH id for updates"""
         df = pd.read_sql_query("SELECT * FROM racks", self.conn)
         return df.values.tolist()
+    
+    def add_full_row(self, values: list):
+        """Add a complete row from grid"""
+        placeholders = ",".join(["?"] * len(values))
+        columns = '", "'.join(self.get_column_names())
+        
+        with self.conn:
+            self.conn.execute(f'INSERT INTO racks ("{columns}") VALUES ({placeholders})', values)
+        self.df = self.load_to_pandas()
+
+    def get_column_names(self):
+        """Return list of column names (excluding id)"""
+        return ["Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
+                "AES Input", "Analog Input", "Distro 1", "Distro 2",
+                "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
+                "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"]
 
     def close(self):
         self.conn.close()
