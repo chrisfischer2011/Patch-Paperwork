@@ -65,8 +65,12 @@ class MainWindow(ctk.CTk):
     def show_load(self):
         if hasattr(self, 'current_tab') and isinstance(self.current_tab, NewProjectTab):
             from modules.input_handler import load_current_project
-            load_current_project(self.current_tab)
-            self.current_tab.refresh_table()   # Refresh after load
+            try:
+                load_current_project(self.current_tab)
+                self.current_tab.load_data_into_grid()   # ← Changed this line
+                messagebox.showinfo("Loaded", "Project loaded successfully.")
+            except Exception as e:
+                messagebox.showerror("Load Error", str(e))
         else:
             messagebox.showwarning("Load", "No project tab open.")
 
