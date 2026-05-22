@@ -36,11 +36,25 @@ class RackTable:
             ''')
 
     def add_rack(self, rack_type: str, rack_number: str):
+        """Quick add from dialog"""
         with self.conn:
             self.conn.execute('''
                 INSERT INTO racks ("Rack #", "Rack Type")
                 VALUES (?, ?)
             ''', (rack_number, rack_type))
+        self.df = self.load_to_pandas()
+
+    def add_full_row(self, values: list):
+        """Add complete row from grid with NaN cleaning"""
+        clean_values = ["" if v == "" or v is None or str(v).lower() == "nan" else v 
+                       for v in values]
+        
+        placeholders = ",".join(["?"] * len(clean_values))
+        columns = '", "'.join(self.get_column_names())
+        
+        with self.conn:
+            self.conn.execute(f'INSERT INTO racks ("{columns}") VALUES ({placeholders})', clean_values)
+        
         self.df = self.load_to_pandas()
 
     def reset(self):
@@ -52,7 +66,7 @@ class RackTable:
         return pd.read_sql_query("SELECT * FROM racks", self.conn)
 
     def get_all_rows(self):
-        """Return rows WITHOUT id for Treeview"""
+        """Return clean rows with NO NaN values - This is the most important fix"""
         df = pd.read_sql_query('''
             SELECT "Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
                    "AES Input", "Analog Input", "Distro 1", "Distro 2",
@@ -60,28 +74,19 @@ class RackTable:
                    "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"
             FROM racks
         ''', self.conn)
-        return df.values.tolist()
-
-    def get_all_rows_with_id(self):
-        """Return rows WITH id for updates"""
-        df = pd.read_sql_query("SELECT * FROM racks", self.conn)
-        return df.values.tolist()
-    
-    def add_full_row(self, values: list):
-        """Add a complete row from grid"""
-        placeholders = ",".join(["?"] * len(values))
-        columns = '", "'.join(self.get_column_names())
         
-        with self.conn:
-            self.conn.execute(f'INSERT INTO racks ("{columns}") VALUES ({placeholders})', values)
-        self.df = self.load_to_pandas()
+        # Clean NaN values - this should fix the issue
+        df = df.fillna("")
+        return df.values.tolist()
 
     def get_column_names(self):
         """Return list of column names (excluding id)"""
-        return ["Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
-                "AES Input", "Analog Input", "Distro 1", "Distro 2",
-                "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
-                "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"]
+        return [
+            "Location", "Rack #", "Rack Type", "Switch Config", "Off Ramp",
+            "AES Input", "Analog Input", "Distro 1", "Distro 2",
+            "Maps 1", "Maps 2", "Maps 3", "Maps 4", "Maps 5", "Maps 6",
+            "Signal In", "Signal Thru", "Signal Out", "Signal Out 2"
+        ]
 
     def close(self):
         self.conn.close()

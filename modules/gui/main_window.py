@@ -45,7 +45,7 @@ class MainWindow(ctk.CTk):
                 self.current_tab.destroy()
             self.current_tab = NewProjectTab(self.main_frame, rack_table=self.rack_table)
             self.current_tab.pack(fill="both", expand=True)
-            messagebox.showinfo("New Project", "Fresh project started — table cleared.")
+
 
     def show_new_project(self):
         """Called on startup"""
@@ -67,8 +67,9 @@ class MainWindow(ctk.CTk):
             from modules.input_handler import load_current_project
             try:
                 load_current_project(self.current_tab)
-                self.current_tab.load_data_into_grid()   # ← Changed this line
-                messagebox.showinfo("Loaded", "Project loaded successfully.")
+                self.current_tab.load_data_into_grid()   # ← This is the correct method for Grid version
+                # Optional: Remove this if you don't want any success message
+                # messagebox.showinfo("Loaded", "Project loaded successfully.")
             except Exception as e:
                 messagebox.showerror("Load Error", str(e))
         else:

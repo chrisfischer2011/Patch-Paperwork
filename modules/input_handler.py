@@ -4,11 +4,10 @@ from pathlib import Path
 from tkinter import filedialog, messagebox
 
 def save_current_project(tab_instance):
-    """Save using the current project_name StringVar"""
+    """Save current grid data to JSON"""
     proj_name = tab_instance.project_name.get().strip()
     if not proj_name:
-        messagebox.showwarning("Save", "Please enter a Project Name first!")
-        return None
+        proj_name = "Untitled_Project"
 
     default_name = f"{proj_name.replace(' ', '_')}.json"
     
@@ -23,12 +22,22 @@ def save_current_project(tab_instance):
         return None
 
     try:
+        # Get latest data directly from the grid (most important change)
+        all_rows = []
+        for row_entries in tab_instance.entries:
+            values = [entry.get().strip() for entry in row_entries]
+            if values[1]:  # Require Rack # 
+                all_rows.append(values)
+
         data = {
             "project_name": proj_name,
-            "racks": tab_instance.rack_table.df.to_dict('records')
+            "racks": all_rows,
+            "headers": tab_instance.headers
         }
+        
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
+        
         messagebox.showinfo("Saved", f"Project '{proj_name}' saved successfully!")
         return file_path
     except Exception as e:
@@ -37,7 +46,7 @@ def save_current_project(tab_instance):
 
 
 def load_current_project(tab_instance):
-    """Load project and update table + name"""
+    """Load from JSON and populate grid"""
     file_path = filedialog.askopenfilename(
         initialdir=Path.home() / "Documents",
         filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
@@ -49,16 +58,21 @@ def load_current_project(tab_instance):
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
+        # Clear current data
         tab_instance.rack_table.reset()
-        for row in data.get("racks", []):
-            rtype = row.get("Rack Type", "112")
-            rnum = row.get("Rack #", "")
-            if rnum:
-                tab_instance.rack_table.add_rack(rtype, rnum)
         
+        # Load racks from JSON
+        for row in data.get("racks", []):
+            if len(row) > 1 and row[1]:   # Check Rack # exists
+                tab_instance.rack_table.add_full_row(row)
+        
+        # Update project name
         tab_instance.project_name.set(data.get("project_name", "Loaded Project"))
-        tab_instance.refresh_table()
-        messagebox.showinfo("Loaded", f"Project '{data.get('project_name')}' loaded!")
+        
+        # Refresh grid
+        tab_instance.load_data_into_grid()
+        
+        # messagebox.showinfo("Loaded", ...)   # You can remove this if you want
         return True
     except Exception as e:
         messagebox.showerror("Load Error", f"Failed to load:\n{str(e)}")

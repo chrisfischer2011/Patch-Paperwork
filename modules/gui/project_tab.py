@@ -7,9 +7,9 @@ class NewProjectTab(ctk.CTkFrame):
         super().__init__(master)
         self.rack_table = rack_table or RackTable()
         self.project_name = ctk.StringVar(value="New Project")
-        self.entries = []  # List of rows, each containing list of Entry widgets
+        self.entries = []   # List of rows (each row is a list of Entry widgets)
 
-        # Project Name
+        # Project Name Row
         name_frame = ctk.CTkFrame(self, fg_color="transparent")
         name_frame.pack(fill="x", padx=20, pady=10)
         ctk.CTkLabel(name_frame, text="Project:", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=(0,8))
@@ -45,8 +45,8 @@ class NewProjectTab(ctk.CTkFrame):
             lbl.grid(row=0, column=col, padx=5, pady=5, sticky="w")
 
     def load_data_into_grid(self):
-        """Clear grid and reload from database"""
-        # Remove only data rows (keep header)
+        """Clear and reload grid from database"""
+        # Remove only data rows (keep headers)
         for widget in list(self.scroll_frame.grid_slaves()):
             if int(widget.grid_info().get("row", 0)) > 0:
                 widget.destroy()
@@ -57,14 +57,13 @@ class NewProjectTab(ctk.CTkFrame):
         for row_idx, row_data in enumerate(rows, start=1):
             row_entries = []
             for col_idx, value in enumerate(row_data):
-                entry = ctk.CTkEntry(self.scroll_frame, width=120)
+                entry = ctk.CTkEntry(self.scroll_frame, width=130)
                 entry.insert(0, str(value) if value is not None else "")
-                entry.grid(row=row_idx, column=col_idx, padx=2, pady=2)
+                entry.grid(row=row_idx, column=col_idx, padx=3, pady=2)
                 row_entries.append(entry)
             self.entries.append(row_entries)
 
     def show_add_rack_dialog(self):
-        """Original dialog with Rack Type and Rack Number"""
         dialog = ctk.CTkToplevel(self)
         dialog.title("Add New Rack")
         dialog.geometry("420x280")
@@ -87,39 +86,34 @@ class NewProjectTab(ctk.CTkFrame):
                 messagebox.showwarning("Missing Info", "Please enter a Rack Number")
                 return
             
-            # Add to database
             self.rack_table.add_rack(rack_type=rtype, rack_number=rnum)
-            messagebox.showinfo("Success", f"Rack Added → {rtype} - {rnum}")
+            # messagebox.showinfo("Success", f"Rack Added → {rtype} - {rnum}")  # Optional - can remove
             dialog.destroy()
-            self.load_data_into_grid()   # Refresh grid
+            self.load_data_into_grid()
 
-        ctk.CTkButton(dialog, text="ADD", command=on_add, height=40, width=120).pack(pady=25)
+        add_button = ctk.CTkButton(dialog, text="ADD", command=on_add, height=40, width=120)
+        add_button.pack(pady=25)
+
+        # Make Enter key work from Rack Number field
+        num_entry.bind("<Return>", lambda e: on_add())
+        
+        # Focus on Rack Number field (most useful)
+        num_entry.focus_set()
 
     def save_all_to_db(self):
-        """Save grid data to database without losing rows"""
+        """Save all grid data to database"""
         try:
-            # Collect all data from grid
             all_rows = []
             for row_entries in self.entries:
                 values = [entry.get().strip() for entry in row_entries]
-                if values[1]:  # If Rack # exists
+                if values[1]:        # Require Rack # to be filled
                     all_rows.append(values)
 
-            # Clear and re-insert
             self.rack_table.reset()
             for values in all_rows:
                 self.rack_table.add_full_row(values)
 
-            messagebox.showinfo("Saved", f"Successfully saved {len(all_rows)} racks.")
-            self.load_data_into_grid()   # Refresh grid with saved data
+            messagebox.showinfo("Success", f"Saved {len(all_rows)} racks successfully.")
+            self.load_data_into_grid()   # Refresh grid
         except Exception as e:
             messagebox.showerror("Save Error", str(e))
-
-    # Optional: Add direct new blank row
-    def add_blank_row(self):
-        # You can call this from another button if wanted
-        pass
-
-    def refresh_table(self):
-        """Compatibility method for main_window.py"""
-        self.load_data_into_grid()
